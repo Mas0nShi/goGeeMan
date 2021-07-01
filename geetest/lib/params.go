@@ -7,24 +7,25 @@ import (
 	"strings"
 )
 
-type Params struct {}
-func (q Params) Userresponse (x int, challenge string) string {
+type Params struct{}
+
+func (q *Params) Userresponse(x int, challenge string) string {
 	maxPos := len(challenge)
-	r2 := challenge[maxPos-2:maxPos]
+	r2 := challenge[maxPos-2 : maxPos]
 	var n2 []int
 
 	for i := 0; i < len(r2); i++ {
 		o := int(r2[i])
 		if o > 57 {
-			n2 = append(n2, o - 87)
+			n2 = append(n2, o-87)
 		} else {
-			n2 = append(n2, o - 48)
+			n2 = append(n2, o-48)
 		}
 	}
-	a := x + n2[0] * 36 + n2[1]
-	t := challenge[0:maxPos-2]
+	a := x + n2[0]*36 + n2[1]
+	t := challenge[0 : maxPos-2]
 	var s [][]byte
-	s = append(s, []byte{},[]byte{},[]byte{},[]byte{},[]byte{})
+	s = append(s, []byte{}, []byte{}, []byte{}, []byte{}, []byte{})
 
 	var m = 0
 	i := 0
@@ -44,7 +45,7 @@ func (q Params) Userresponse (x int, challenge string) string {
 	l := a
 	var v = 4
 	var d = ""
-	p := []int{1,2,5,10,50}
+	p := []int{1, 2, 5, 10, 50}
 
 	for l > 0 {
 		if l-p[v] >= 0 {
@@ -69,28 +70,28 @@ func _e(trackArrays [][]int) [][]int {
 		i  = 0
 		o  = 0
 	)
-	for a := 0; a < len(trackArrays) - 1; a++ {
-		n2 =  trackArrays[a + 1][0] - trackArrays[a][0]
-		i = trackArrays[a + 1][1] - trackArrays[a][1]
-		o = trackArrays[a + 1][2] - trackArrays[a][2]
+	for a := 0; a < len(trackArrays)-1; a++ {
+		n2 = trackArrays[a+1][0] - trackArrays[a][0]
+		i = trackArrays[a+1][1] - trackArrays[a][1]
+		o = trackArrays[a+1][2] - trackArrays[a][2]
 		if n2 == 0 && i == 0 && o == 0 {
 			continue
 		}
 		if n2 == 0 && i == 0 {
 			r2 += o
 		} else {
-			t = append(t,[]int{n2, i, o + r2})
+			t = append(t, []int{n2, i, o + r2})
 			r2 = 0
 		}
 	}
 
 	if r2 != 0 {
-		t = append(t,[]int{n2, i, r2})
+		t = append(t, []int{n2, i, r2})
 	}
 	return t
 }
 func _n(trackArr []int) int {
-	t := [][]int{{1,0}, {2,0}, {1,-1}, {1,1}, {0, 1}, {0, -1}, {3, 0}, {2, -1}, {2, 1}}
+	t := [][]int{{1, 0}, {2, 0}, {1, -1}, {1, 1}, {0, 1}, {0, -1}, {3, 0}, {2, -1}, {2, 1}}
 	s := "stuvwxyz~"
 	for m := 0; m < len(t); m++ {
 		if trackArr[0] == t[m][0] && trackArr[1] == t[m][1] {
@@ -121,7 +122,7 @@ func _r(x int) string {
 	}
 	return a + m + string(t[i])
 }
-func (q Params) EncTrack(trackArrays [][]int) string {
+func (q *Params) EncTrack(trackArrays [][]int) string {
 	var (
 		i []string
 		o []string
@@ -143,8 +144,9 @@ func (q Params) EncTrack(trackArrays [][]int) string {
 
 	return strings.Join(i, "") + "!!" + strings.Join(o, "") + "!!" + strings.Join(a, "")
 }
+
 // Aa Params: EncTrack(trackArrays), c, s
-func (q Params) Aa(encTracks string, c []int, s string) string {
+func (q *Params) Aa(encTracks string, c []int, s string) string {
 	n2 := 0
 	i := 2
 	a := encTracks
@@ -154,7 +156,7 @@ func (q Params) Aa(encTracks string, c []int, s string) string {
 	t := c[4]
 	for true {
 		var o string
-		if n2+ i <= len(s) {
+		if n2+i <= len(s) {
 			o = s[n2 : n2+i]
 		} else {
 			o = ""
@@ -167,11 +169,9 @@ func (q Params) Aa(encTracks string, c []int, s string) string {
 		d, _ := strconv.ParseInt(o, 16, 64)
 		f := string(d)
 		g := int(d)
-		l := (y * g * g + u * g + t) % l2
+		l := (y*g*g + u*g + t) % l2
 		a = a[:l] + f + a[l:]
 	}
 
-
 	return a
 }
-
