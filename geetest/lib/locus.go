@@ -28,7 +28,7 @@ func randTrack(x int) [][]int {
 		{rands.Range(-200, 150), 29, 0},
 		{-1, 0, rands.Range(500, 560)},
 		{0, 1, 23},
-		{-1, 0, rands.Range(500, 560)},
+		{-1, 0, 250},
 		{1, 0, 21},
 		{1, 0, 15},
 		{2, 0, 24},
@@ -37,14 +37,14 @@ func randTrack(x int) [][]int {
 	var a float64
 	var move float64
 	current := 0.0
-	midX := float64(x) * 3 / 5
+	midX := float64(x) * 2.3 / 5
 	t := 0.07
 	v := 0.0
 	for current < float64(x)-2 {
 		if current < midX {
-			a = 1.7
+			a = 2
 		} else {
-			a = -3.0
+			a = -4.0
 		}
 		v0 := v
 		t = float64(rands.Range(3, 5)) / 10

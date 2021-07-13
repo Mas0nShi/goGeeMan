@@ -2,23 +2,26 @@ package geetest
 
 import (
 	"./lib"
-	"./lib/MHttp"
 	"encoding/json"
+	"github.com/Mas0nShi/MHttp"
 	"github.com/Mas0nShi/goConsole/console"
 	"github.com/tidwall/gjson"
 	"regexp"
 	"strconv"
 	"time"
 )
+
 const errorMsg = `{"success": 0, "message": "you should check error."}`
+
 // JsonpParse parse jsonp
 func JsonpParse(respStr string) string {
 	reg, _ := regexp.Compile(`^.*\((.*?)\)$`)
 	return reg.ReplaceAllString(respStr, "$1")
 }
+
 // TimeStamp 13 timestamp
 func TimeStamp() string {
-	return strconv.FormatInt(time.Now().UnixNano() / 1e6, 10)
+	return strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
 }
 
 func EmulatorParams(gt string, challenge string, x int, s string) string {
@@ -26,22 +29,22 @@ func EmulatorParams(gt string, challenge string, x int, s string) string {
 	libp := lib.Params{}
 	Crypto := lib.Crypto{}
 
-	tracks, slideX ,times := Random.MoveSlide(x - 9, 5) // TODO: success rate and accuracy. 60~100%
+	tracks, slideX, times := Random.MoveSlide(x-7, 3) // TODO: success rate and accuracy. 60~100%
 	structBody := struct {
 		Userresponse string `json:"userresponse"`
-		Passtime int `json:"passtime"`
-		Imgload int `json:"imgload"`
-		Aa string `json:"aa"`
-		Ep struct {
+		Passtime     int    `json:"passtime"`
+		Imgload      int    `json:"imgload"`
+		Aa           string `json:"aa"`
+		Ep           struct {
 			V string `json:"v"`
 		} `json:"ep"`
 		Rp string `json:"rp"`
 	}{
 		Userresponse: libp.Userresponse(slideX, challenge),
-		Passtime: times,
-		Imgload:  Random.Range(100, 300),
-		Aa:       libp.Aa(libp.EncTrack(tracks),[]int{12, 58, 98, 36, 43, 95, 62, 15, 12}, s),
-		Ep:		  struct {
+		Passtime:     times,
+		Imgload:      Random.Range(100, 300),
+		Aa:           libp.Aa(libp.EncTrack(tracks), []int{12, 58, 98, 36, 43, 95, 62, 15, 12}, s),
+		Ep: struct {
 			V string `json:"v"`
 		}{V: "8.7.8"},
 	}
@@ -57,18 +60,22 @@ func GetPass(gt string, challenge string) string {
 	var (
 		url     = ""
 		ret     = ""
-		headers = map[string]string {
-			"User-agent": "Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36",
+		headers = map[string]string{
+			"User-agent":   "Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36",
 			"Content-Type": "text/javascript;charset=UTF-8",
 		}
 	)
-	http := &MHttp.MHttp{}
-
+	http := new(MHttp.MHttp)
+	http.SetRequestHeaders(headers)
 	url = "https://api.geetest.com/gettype.php?gt=" + gt + "&lang=zh-cn&pt=3&client_type=web_mobile&w=&callback=geetest_" + TimeStamp()
-	ret = http.Get(url,&headers,nil).GetResponseText()
+	http.Open("GET", url)
+	http.Send(nil)
+	ret = http.GetResponseText()
 
-	url = "https://api.geetest.com/ajax.php?gt=" + gt + "&challenge="+ challenge + "&lang=zh-cn&pt=3&client_type=web_mobile&w=&callback=geetest_" + TimeStamp() // TODO: the init param w: coming soon 🙂
-	ret = http.Get(url,&headers,nil).GetResponseText()
+	url = "https://api.geetest.com/ajax.php?gt=" + gt + "&challenge=" + challenge + "&lang=zh-cn&pt=3&client_type=web_mobile&w=&callback=geetest_" + TimeStamp() // TODO: the init param w: coming soon 🙂
+	http.Open("GET", url)
+	http.Send(nil)
+	ret = http.GetResponseText()
 
 	ret = JsonpParse(ret)
 	if gjson.Get(ret, "data.result").String() != "slide" {
@@ -77,20 +84,27 @@ func GetPass(gt string, challenge string) string {
 	}
 
 	url = "https://api.geetest.com/get.php?is_next=true&type=slide3&gt=" + gt + "&challenge=" + challenge + "&lang=zh-cn&https=false&protocol=https%3A%2F%2F&offline=false&product=embed&api_server=api.geetest.com&isPC=true&autoReset=true&width=100%25&callback=geetest_" + TimeStamp()
-	ret = http.Get(url,&headers,nil).GetResponseText()
+	http.Open("GET", url)
+	http.Send(nil)
+	ret = http.GetResponseText()
 
 	jp := gjson.Parse(JsonpParse(ret))
 	s := jp.Get("s").String()
 	challenge = jp.Get("challenge").String()
 
-	fullbgUrl := "https://static.geetest.com/"  + jp.Get("fullbg").String()
-	bgUrl := "https://static.geetest.com/"  + jp.Get("bg").String()
+	url = "https://static.geetest.com/" + jp.Get("fullbg").String()
 
-	fullbgBytes := http.Get(fullbgUrl, &headers, nil).GetResponseBody()
-	bgBytes := http.Get(bgUrl, &headers, nil).GetResponseBody()
+	http.Open("GET", url)
+	http.Send(nil)
+	fullbgBytes := http.GetResponseBody()
+
+	url = "https://static.geetest.com/" + jp.Get("bg").String()
+	http.Open("GET", url)
+	http.Send(nil)
+	bgBytes := http.GetResponseBody()
 
 	fullbg, err := lib.RefuseImage(fullbgBytes) // refuse picture
-	bg, err := lib.RefuseImage(bgBytes) // refuse picture
+	bg, err := lib.RefuseImage(bgBytes)         // refuse picture
 	if fullbg == nil || bg == nil {
 		console.Error(err)
 		return errorMsg
@@ -99,8 +113,10 @@ func GetPass(gt string, challenge string) string {
 	x, _ := lib.CompareOcr(&bg, &fullbg) // ocr x
 
 	w := EmulatorParams(gt, challenge, x, s)
-	url = "https://api.geetest.com/ajax.php?gt=" + gt + "&challenge=" + challenge + "&lang=zh-cn&pt=3&client_type=web_mobile&w=" + w + "&callback=geetest_" + TimeStamp()
 
-	ret = http.Get(url, &headers, nil).GetResponseText()
+	url = "https://api.geetest.com/ajax.php?gt=" + gt + "&challenge=" + challenge + "&lang=zh-cn&pt=3&client_type=web_mobile&w=" + w + "&callback=geetest_" + TimeStamp()
+	http.Open("GET", url)
+	http.Send(nil)
+	ret = http.GetResponseText()
 	return JsonpParse(ret)
 }
